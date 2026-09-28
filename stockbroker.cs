@@ -34,11 +34,12 @@ namespace Stock { // proper namespace
                 // Print the header to console
                 Console.WriteLine(titles);
                 // Overwrite (false) the file with this same header once
-                using (StreamWriter outputFile = new StreamWriter(destPath, false))
+                using (FileStream fs = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter outputFile = new StreamWriter(fs))
                 {
-                    outputFile.WriteLine(titles); // output to life
+                    outputFile.WriteLine(titles);
                 }
-                _headerWritten = true; // prevents brokers from rewriting
+                _headerWritten = true; ; // prevents brokers from rewriting
             }
         }
 
@@ -70,13 +71,14 @@ namespace Stock { // proper namespace
             try
             {
                 // Append this line to the output file
-                using (StreamWriter outputFile = new StreamWriter(destPath, true))
+                using (FileStream fs = new FileStream(destPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter outputFile = new StreamWriter(fs))
                 {
-                    await outputFile.WriteLineAsync(message);   // keeping it async
+                    await outputFile.WriteLineAsync(message);
                 }
-                // Also write to console
+
                 Console.WriteLine(message);
-    }
+            }
             catch (IOException)
             {
                 // Handle or log any file I/O exceptions if needed
