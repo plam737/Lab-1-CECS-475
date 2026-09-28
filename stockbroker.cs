@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks; // added necessary statements
 
 namespace Stock { // proper namespace
@@ -22,16 +23,22 @@ namespace Stock { // proper namespace
         "Value".PadRight(10) +
         "Changes".PadRight(10) +
         "Date and Time";
+        private static bool _headerWritten = false; // flag to help with race conditions
+        private static readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1,1);
 
         public StockBroker(string brokerName)
         {
             BrokerName = brokerName;
-            // Print the header to console
-            Console.WriteLine(titles);
-            // Overwrite (false) the file with this same header once
-            using (StreamWriter outputFile = new StreamWriter(destPath, false))
+            if (!_headerWritten)
             {
-               outputFile.WriteLine(titles); // output to life
+                // Print the header to console
+                Console.WriteLine(titles);
+                // Overwrite (false) the file with this same header once
+                using (StreamWriter outputFile = new StreamWriter(destPath, false))
+                {
+                    outputFile.WriteLine(titles); // output to life
+                }
+                _headerWritten = true; // prevents brokers from rewriting
             }
         }
 
@@ -42,7 +49,7 @@ namespace Stock { // proper namespace
             stock.StockEvent += EventHandler;   // subscription
         }
 
-        private async void EventHandler(object sender, EventArgs e) // async void for implementation
+        private async void EventHandler(object? sender, EventArgs e) // async void for implementation
         { if (sender is not null)
                 // The second parameter needs to be cast to StockNotification
                 await Helper(sender, (StockNotification) e);
@@ -59,21 +66,23 @@ namespace Stock { // proper namespace
             $"{e.CurrentValue.ToString().PadRight(10)}" +
             $"{e.NumChanges.ToString().PadRight(10)}" +
             $"{DateTime.Now}";
+            await _fileLock.WaitAsync();    //force threads to wait!!!
             try
             {
                 // Append this line to the output file
                 using (StreamWriter outputFile = new StreamWriter(destPath, true))
                 {
-                    await outputFile.WriteAsync(message);   // keeping it async
+                    await outputFile.WriteLineAsync(message);   // keeping it async
                 }
                 // Also write to console
                 Console.WriteLine(message);
     }
-            catch (IOException ex)
+            catch (IOException)
             {
                 // Handle or log any file I/O exceptions if needed
                 Console.WriteLine($"ERROR WRITING");
             }
+            finally { _fileLock.Release(); } // release lock  
         }
     }
 }

@@ -7,10 +7,10 @@ using System;
 
 namespace Stock
 {
-//-----------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------
     public class Stock
     {
-        public event EventHandler<StockNotification> StockEvent;
+        public event EventHandler<StockNotification>? StockEvent;
         //Name of our stock.
         private string _name;
         //Starting value of the stock.
@@ -29,7 +29,7 @@ namespace Stock
         public int CurrentValue { get => _currentValue; set => _currentValue = value; }
         public int MaxChange { get => _maxChange; set => _maxChange = value; }
         public int Threshold { get => _threshold; set => _threshold = value; }
-        public int NumChanges {get => _numChanges; set => _numChanges = value; }
+        public int NumChanges { get => _numChanges; set => _numChanges = value; }
         //-----------------------------------------------------------------------------
         /// <summary>
         /// Stock class that contains all the information and changes of the stock
@@ -81,17 +81,18 @@ namespace Stock
         }
         //------------------------------------------------------------------------------------------------
     }
-}
-public class StockNotification : EventArgs
-{
-    public string StockName { get; set; }
-    public int CurrentValue { get; set; }
-    public int NumChanges { get; set; }
 
-    public StockNotification(string stockName, int currentValue, int numChanges)
+    public class StockNotification : EventArgs
     {
-        this.StockName = stockName;
-        this.CurrentValue = currentValue;
-        this.NumChanges = numChanges;
+        public string StockName { get; set; }
+        public int CurrentValue { get; set; }
+        public int NumChanges { get; set; }
+
+        public StockNotification(string stockName, int currentValue, int numChanges)
+        {
+            this.StockName = stockName;
+            this.CurrentValue = currentValue;
+            this.NumChanges = numChanges;
+        }
     }
 }
