@@ -1,0 +1,8 @@
+Contributions:
+Peter Lam:
+  stock.cs implementation
+  pdf highlighting event raising and async implementation
+
+Matthew Bennett:
+  stockbroker.cs implementation
+  video
